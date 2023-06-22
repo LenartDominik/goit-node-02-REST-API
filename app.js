@@ -8,6 +8,8 @@ const usersRouter = require('./routes/api/users');
 require('dotenv').config();
 const uriDb = process.env.DB_URI;
 
+console.log(uriDb);
+
 const connection = mongoose.connect(uriDb, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
