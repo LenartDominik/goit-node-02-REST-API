@@ -15,6 +15,8 @@ const {
 	favoriteSchema,
 } = require('../../models/contacts');
 
+// const {userSchema} = require("../../models/userModel");
+
 router.get('/', async (_, res) => {
 	try {
 		const contacts = await listContacts();
