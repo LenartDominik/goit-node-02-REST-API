@@ -7,7 +7,7 @@ const tokenMiddleware = async (req, res, next) => {
 	}
 	jwt.verify(token, process.env.ACCESS_TOKEN, (err, data) => {
 		if (err) {
-			return res.sendStatus(403).send();
+			return res.sendStatus(403);
 		}
 		req.user = data;
 		next();
