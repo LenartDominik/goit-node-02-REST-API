@@ -17,10 +17,10 @@ const {
 
 // const {userSchema} = require("../../models/userModel");
 
-router.get('/', async (_, res) => {
+router.get('/', async (req, res) => {
 	try {
 		const contacts = await listContacts();
-res.status(200).json(contacts);
+		res.status(200).json(contacts);
 	} catch (err) {
 		console.warn(err.message);
 	}
@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
 			res.status(400).json({ message: 'missing required field' });
 		} else {
 			const newContact = await addContact(req.body);
-			
+
 			res.status(201).json(newContact);
 		}
 	} catch (err) {
