@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
+const jimp = require('jimp');
+const path = require('path');
+const fs = require('fs').promises;
 
 const { userSchema } = require('./../../models/users');
 const {
@@ -11,6 +15,7 @@ const {
 	addUser,
 } = require('./../../controllers/userOperations');
 const tokenMiddleware = require('./../../middlewares/tokenMiddleware');
+const upload = require('./../../middlewares/upload');
 
 router.post('/signup', async (req, res, next) => {
 	try {
@@ -28,15 +33,19 @@ router.post('/signup', async (req, res, next) => {
 
 		const hashedPassword = await bcrypt.hashSync(req.body.password, 10);
 
+		const avatarURL = gravatar.url(req.body.email);
+
 		const newUser = await addUser({
 			email: req.body.email,
 			password: hashedPassword,
+			avatarURL,
 		});
 
 		res.status(201).json({
 			user: {
 				email: newUser.email,
 				subscription: newUser.subscription,
+				avatarURL: newUser.avatarURL,
 			},
 		});
 	} catch (err) {
@@ -111,5 +120,39 @@ router.get('/current', tokenMiddleware, async (req, res) => {
 		res.status(500).json({ message: err.message });
 	}
 });
+
+router.patch(
+	'/avatars',
+	tokenMiddleware,
+	upload.single('avatar'),
+	async (req, res) => {
+		try {
+			const { path: temp, filename } = req.file;
+			const avatarDir = path.join(process.cwd(), 'public', 'avatars');
+
+			if (!req.file) {
+				return res.status(400).json({ message: 'File not found' });
+			}
+
+			const image = await jimp.read(req.file.path);
+			await image.autocrop().resize(250, 250).writeAsync(req.file.path);
+			const user = await findUserByID(req.user.userId);
+
+			if (!user) {
+				return res.staus(401).json({ message: 'Not Authorized' });
+			}
+
+			await fs.rename(temp, path.join(avatarDir, filename));
+			user.avatarURL = `/avatars/${filename}`;
+			await user.save();
+
+			return res
+				.status(200)
+				.json({ avatarURL: user.avatarURL, message: 'avatar updated' });
+		} catch (err) {
+			res.status(500).json({ message: err.message });
+		}
+	}
+);
 
 module.exports = router;
