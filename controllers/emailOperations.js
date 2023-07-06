@@ -20,7 +20,6 @@ const sendVerificationMsg = async (addressee, verificationToken, errors) => {
       <p>Thank you for registering! We are thrilled to have you on board!</p>
       <p>Just one quick step left to get started - please click the link below to confirm your email address.</p>
       <p>${baseUrl}/api/users/verify/${verificationToken}</p>
-      <p>Error: ${errors[0].message}</p>
     `,
   };
 
